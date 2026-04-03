@@ -1,0 +1,67 @@
+@import "tailwindcss";
+
+/* Reset de márgenes y box-sizing */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  width: 100%;
+  height: 100%;
+}
+
+/* Estilos de estructura */
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  font-family:
+    system-ui,
+    -apple-system,
+    sans-serif;
+  line-height: 1.5;
+  background-color: #ffffff;
+  color: #1a1a1a;
+}
+
+/* Tipografía básica */
+h1,
+h2,
+h3,
+h4 {
+  line-height: 1.2;
+  margin-bottom: 1rem;
+}
+
+h1 {
+  font-size: 2.5rem;
+}
+h2 {
+  font-size: 2rem;
+}
+
+p {
+  margin-bottom: 1rem;
+}
+
+/* Enlaces */
+a {
+  text-decoration: none;
+  color: inherit; /* Para que no salgan azules por defecto */
+}
+
+/* Imágenes para que no rompan el layout */
+img {
+  max-width: 100%;
+  display: block;
+}
+
+/* Listas sin puntitos (opcional, muy útil para menús) */
+ul {
+  list-style: none;
+}

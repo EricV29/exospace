@@ -1,5 +1,8 @@
 ---
 import "../styles/global.css";
+import Starfield from "../components/Starfield.tsx";
+import TechFrame from "../components/TechFrame.astro";
+import Pointer from "../assets/pointer.astro";
 ---
 
 <!doctype html>
@@ -10,9 +13,49 @@ import "../styles/global.css";
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <link rel="icon" href="/favicon.ico" />
     <meta name="generator" content={Astro.generator} />
-    <title>Astro Basics</title>
+    <title>Exospace</title>
   </head>
-  <body>
-    <slot />
+  <body class="w-full h-screen">
+    <div id="cursor" class="custom-cursor">
+      <Pointer />
+    </div>
+    <Starfield client:load />
+    <TechFrame />
+    <main class="relative z-10 w-full h-full">
+      <slot />
+    </main>
+    <script>
+      const cursor = document.getElementById("cursor");
+
+      if (cursor) {
+        let mouseX = 0;
+        let mouseY = 0;
+
+        const updateCursor = () => {
+          cursor.style.transform = `translate3d(${mouseX - 25}px, ${mouseY - 25}px, 0)`;
+          requestAnimationFrame(updateCursor);
+        };
+
+        window.addEventListener("mousemove", (e) => {
+          mouseX = e.clientX;
+          mouseY = e.clientY;
+
+          if (cursor.style.opacity !== "1") {
+            cursor.style.opacity = "1";
+          }
+        });
+
+        requestAnimationFrame(updateCursor);
+
+        document.addEventListener(
+          "mouseleave",
+          () => (cursor.style.opacity = "0"),
+        );
+        document.addEventListener(
+          "mouseenter",
+          () => (cursor.style.opacity = "1"),
+        );
+      }
+    </script>
   </body>
 </html>

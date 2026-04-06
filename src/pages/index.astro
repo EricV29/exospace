@@ -1,29 +1,16 @@
 ---
 import Layout from "../layouts/Layout.astro";
-import PlanetCard from "../components/PlanetCars.astro";
+import PlanetGallery from "../components/PlanetCard.tsx";
 
 const API_URL =
   "https://exoplanetarchive.ipac.caltech.edu/TAP/sync?query=select+top+5+pl_name,discoverymethod,pl_orbper,pl_dens,pl_eqt,sy_snum,sy_dist,disc_year,pl_rade,pl_masse+from+ps+order+by+disc_year+desc&format=json";
 
-let planets = [];
-let error = null;
-
-try {
-  const response = await fetch(API_URL);
-
-  if (!response.ok) {
-    throw new Error("Error API connection");
-  }
-
-  planets = await response.json();
-} catch (e) {
-  if (e instanceof Error) error = e.message;
-  console.error("Error navigation:", e);
-}
-
-console.log(planets);
+const response = await fetch(API_URL);
+const initialPlanets = await response.json();
 ---
 
 <Layout>
-  {planets.length > 0 && <PlanetCard planet={planets[0]} />}
+  <main class="h-screen w-screen overflow-hidden">
+    <PlanetGallery client:load initialPlanets={initialPlanets} />
+  </main>
 </Layout>

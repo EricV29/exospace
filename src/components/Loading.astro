@@ -1,0 +1,82 @@
+<div
+  id="loading-screen"
+  class="fixed inset-0 z-50 flex items-center justify-center bg-black pointer-events-none opacity-0 transition-opacity duration-500"
+>
+  <div class="relative flex items-center justify-center">
+    <!-- Órbitas -->
+    <svg class="absolute" width="200" height="200" viewBox="0 0 200 200">
+      <ellipse
+        cx="100"
+        cy="100"
+        rx="80"
+        ry="30"
+        fill="none"
+        stroke="rgba(255,255,255,0.15)"
+        stroke-width="1"></ellipse>
+      <ellipse
+        cx="100"
+        cy="100"
+        rx="55"
+        ry="20"
+        fill="none"
+        stroke="rgba(255,255,255,0.1)"
+        stroke-width="1"></ellipse>
+      <!-- Planeta orbitando exterior -->
+      <circle
+        class="orbit-dot-outer"
+        cx="180"
+        cy="100"
+        r="4"
+        fill="white"
+        opacity="0.8"></circle>
+      <!-- Planeta orbitando interior -->
+      <circle
+        class="orbit-dot-inner"
+        cx="155"
+        cy="100"
+        r="2.5"
+        fill="white"
+        opacity="0.5"></circle>
+    </svg>
+    <!-- Planeta central -->
+    <div
+      class="w-10 h-10 rounded-full bg-white/10 border border-white/20 backdrop-blur-sm"
+    >
+    </div>
+  </div>
+
+  <p
+    class="absolute bottom-[calc(50%-80px)] text-[10px] font-mono text-white/40 uppercase tracking-[0.4em]"
+  >
+    Escaneando_exoplanetas
+  </p>
+</div>
+
+<style>
+  @keyframes orbit-outer {
+    from {
+      transform-origin: 100px 100px;
+      transform: rotate(0deg);
+    }
+    to {
+      transform-origin: 100px 100px;
+      transform: rotate(360deg);
+    }
+  }
+  @keyframes orbit-inner {
+    from {
+      transform-origin: 100px 100px;
+      transform: rotate(0deg);
+    }
+    to {
+      transform-origin: 100px 100px;
+      transform: rotate(-360deg);
+    }
+  }
+  .orbit-dot-outer {
+    animation: orbit-outer 3s linear infinite;
+  }
+  .orbit-dot-inner {
+    animation: orbit-inner 2s linear infinite;
+  }
+</style>

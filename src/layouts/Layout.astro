@@ -1,8 +1,8 @@
 ---
 import "../styles/global.css";
-import Starfield from "../components/Starfield.tsx";
 import TechFrame from "../components/TechFrame.astro";
 import Pointer from "../assets/pointer.astro";
+import Loading from "../components/Loading.astro";
 ---
 
 <!doctype html>
@@ -16,10 +16,10 @@ import Pointer from "../assets/pointer.astro";
     <title>Exospace</title>
   </head>
   <body class="w-full h-screen">
+    <Loading />
     <div id="cursor" class="custom-cursor">
       <Pointer />
     </div>
-    <Starfield client:load />
     <TechFrame />
     <main class="relative z-10 w-full h-full">
       <slot />

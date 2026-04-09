@@ -1,6 +1,7 @@
 ---
 import Layout from "../layouts/Layout.astro";
 import PlanetCard from "../components/PlanetCard.astro";
+import PlanetScene from "../components/PlanetScene.astro";
 
 const API_URL =
   "https://exoplanetarchive.ipac.caltech.edu/TAP/sync?query=" +
@@ -19,6 +20,10 @@ const initialPlanets = await response.json();
 
 <Layout>
   <main class="h-screen w-screen overflow-hidden relative">
+    <!--Planet 3D -->
+    <PlanetScene planet={initialPlanets[0]} />
+
+    <!--Buttons -->
     <div
       class="absolute right-12 md:right-16 z-30 flex gap-4 top-1/2 -translate-y-1/2"
     >
@@ -41,6 +46,8 @@ const initialPlanets = await response.json();
         >
       </button>
     </div>
+
+    <!--Planets info -->
     <PlanetCard planet={initialPlanets[0]} />
   </main>
 </Layout>
@@ -88,6 +95,10 @@ const initialPlanets = await response.json();
     if (eqtEl) {
       eqtEl.className = `text-3xl font-light ${isHot ? "text-amber-400" : "text-white"}`;
     }
+
+    if ((window as any).updateScene) {
+      (window as any).updateScene(planet);
+    }
   }
 
   function showLoading() {
@@ -109,7 +120,7 @@ const initialPlanets = await response.json();
   async function fetchMore() {
     if (isFetching) return;
     isFetching = true;
-    showLoading();
+    // showLoading();
     try {
       const res = await fetch(`/api/planets?offset=${offset}`);
       const newPlanets = await res.json();
@@ -121,7 +132,7 @@ const initialPlanets = await response.json();
       console.error("Error fetching planets:", e);
     } finally {
       isFetching = false;
-      hideLoading();
+      // hideLoading();
     }
   }
 

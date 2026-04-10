@@ -19,36 +19,37 @@ const initialPlanets = await response.json();
 ---
 
 <Layout>
-  <main class="h-screen w-screen overflow-hidden relative">
-    <!--Planet 3D -->
+  <main class="h-screen w-screen overflow-hidden relative bg-black">
     <PlanetScene planet={initialPlanets[0]} />
 
-    <!--Buttons -->
     <div
-      class="absolute right-12 md:right-16 z-30 flex gap-4 top-1/2 -translate-y-1/2"
+      class="absolute inset-0 z-20 pointer-events-none flex flex-col justify-between p-12 md:p-16"
     >
-      <button
-        id="prev-planet"
-        class="group flex items-center justify-center w-14 h-14 border border-white/20 rounded-full hover:border-white/60 transition-all active:scale-95 bg-black/20 backdrop-blur-sm"
-      >
-        <span
-          class="text-white opacity-40 group-hover:opacity-100 transition-opacity"
-          >←</span
-        >
-      </button>
-      <button
-        id="next-planet"
-        class="group flex items-center justify-center w-14 h-14 border border-white/20 rounded-full hover:border-white/60 transition-all active:scale-95 bg-black/20 backdrop-blur-sm"
-      >
-        <span
-          class="text-white opacity-40 group-hover:opacity-100 transition-opacity"
-          >→</span
-        >
-      </button>
-    </div>
+      <PlanetCard planet={initialPlanets[0]} />
 
-    <!--Planets info -->
-    <PlanetCard planet={initialPlanets[0]} />
+      <div
+        class="absolute right-12 md:right-16 z-30 flex gap-4 top-1/2 -translate-y-1/2 pointer-events-auto"
+      >
+        <button
+          id="prev-planet"
+          class="group flex items-center justify-center w-14 h-14 border border-white/20 rounded-full hover:border-white/60 transition-all active:scale-95 bg-black/20 backdrop-blur-sm"
+        >
+          <span
+            class="text-white opacity-40 group-hover:opacity-100 transition-opacity"
+            >←</span
+          >
+        </button>
+        <button
+          id="next-planet"
+          class="group flex items-center justify-center w-14 h-14 border border-white/20 rounded-full hover:border-white/60 transition-all active:scale-95 bg-black/20 backdrop-blur-sm"
+        >
+          <span
+            class="text-white opacity-40 group-hover:opacity-100 transition-opacity"
+            >→</span
+          >
+        </button>
+      </div>
+    </div>
   </main>
 </Layout>
 

@@ -8,6 +8,7 @@ const { planet } = Astro.props as { planet: Planet };
 <script>
   import * as THREE from "three";
   import type { Planet } from "../types/planet";
+  import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
 
   // --- CONFIGURACIÓN E INSTANCIAS ---
   const loader = new THREE.TextureLoader();
@@ -40,6 +41,13 @@ const { planet } = Astro.props as { planet: Planet };
     1000,
   );
   camera.position.z = 10;
+
+  const controls = new OrbitControls(camera, renderer.domElement);
+  controls.enableDamping = true; // Suavidad
+  controls.dampingFactor = 0.05;
+  controls.enablePan = false; // No desplazar el planeta
+  controls.minDistance = 3.5; // Límite zoom cerca
+  controls.maxDistance = 20;
 
   // --- SOLES 3D (SISTEMA ESTELAR) ---
   const sunGeometry = new THREE.SphereGeometry(0.6, 32, 32);
@@ -186,8 +194,14 @@ const { planet } = Astro.props as { planet: Planet };
 
   function animate() {
     requestAnimationFrame(animate);
+    controls.update();
     planetMesh.rotation.y += 0.0018;
     atmosphere.rotation.y += 0.0012;
+
+    activeSuns.forEach((sun) => {
+      sun.rotation.y += 0.005;
+    });
+
     renderer.render(scene, camera);
   }
   animate();

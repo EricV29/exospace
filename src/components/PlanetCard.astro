@@ -1,8 +1,10 @@
 ---
 const { planet } = Astro.props;
-const distLY = (planet.sy_dist * 3.262).toFixed(1);
-const orbitDays = planet.pl_orbper?.toFixed(1) || "---";
-const isHot = planet.pl_eqt > 500;
+
+// 1. Evitamos cálculos si planet es null
+const distLY = planet?.sy_dist ? (planet.sy_dist * 3.262).toFixed(1) : "---";
+const orbitDays = planet?.pl_orbper?.toFixed(1) || "---";
+const isHot = (planet?.pl_eqt ?? 0) > 500;
 ---
 
 <section
@@ -16,12 +18,12 @@ const isHot = planet.pl_eqt > 500;
     <h1
       class="text-5xl md:text-7xl font-light italic tracking-tighter uppercase leading-none"
     >
-      <span data-field="pl_name">{planet.pl_name ?? "???"}</span>
+      <span data-field="pl_name">{planet?.pl_name ?? "Cargando..."}</span>
     </h1>
     <h3 class="text-lg font-mono opacity-60 mt-2">
-      Año_descubrimiento: <span data-field="disc_year" class="text-white"
-        >{planet.disc_year ?? "???"}</span
-      >
+      Año_descubrimiento: <span data-field="disc_year" class="text-white">
+        {planet?.disc_year ?? "???"}
+      </span>
     </h3>
   </div>
 
@@ -33,7 +35,7 @@ const isHot = planet.pl_eqt > 500;
         Radio_Planetario
       </p>
       <p class="text-3xl text-white font-light">
-        <span data-field="pl_rade">{planet.pl_rade?.toFixed(2) ?? "---"}</span>
+        <span data-field="pl_rade">{planet?.pl_rade?.toFixed(2) ?? "---"}</span>
         <span class="text-xs opacity-50">R⊕</span>
       </p>
     </div>
@@ -42,7 +44,8 @@ const isHot = planet.pl_eqt > 500;
         Masa_Estimada
       </p>
       <p class="text-3xl text-white font-light">
-        <span data-field="pl_masse">{planet.pl_masse?.toFixed(2) ?? "---"}</span
+        <span data-field="pl_masse"
+          >{planet?.pl_masse?.toFixed(2) ?? "---"}</span
         >
         <span class="text-xs opacity-50">M⊕</span>
       </p>
@@ -52,7 +55,7 @@ const isHot = planet.pl_eqt > 500;
         Densidad_G/CM³
       </p>
       <p class="text-3xl text-white font-light">
-        <span data-field="pl_dens">{planet.pl_dens?.toFixed(2) ?? "---"}</span>
+        <span data-field="pl_dens">{planet?.pl_dens?.toFixed(2) ?? "---"}</span>
       </p>
     </div>
     <div class="border-l-2 border-white/40 pl-4">
@@ -62,7 +65,7 @@ const isHot = planet.pl_eqt > 500;
       <p
         class={`text-3xl font-light ${isHot ? "text-amber-400" : "text-white"}`}
       >
-        <span data-field="pl_eqt">{planet.pl_eqt ?? "---"}</span>
+        <span data-field="pl_eqt">{planet?.pl_eqt ?? "---"}</span>
         <span class="text-xs opacity-50">K</span>
       </p>
     </div>
@@ -90,7 +93,8 @@ const isHot = planet.pl_eqt > 500;
     <p
       class="text-xl font-light tracking-wide uppercase border-l-2 border-white pl-4"
     >
-      <span data-field="discoverymethod">{planet.discoverymethod ?? "???"}</span
+      <span data-field="discoverymethod"
+        >{planet?.discoverymethod ?? "???"}</span
       >
     </p>
   </div>

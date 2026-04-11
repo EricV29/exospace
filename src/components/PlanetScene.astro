@@ -1,6 +1,5 @@
 ---
 import type { Planet } from "../types/planet";
-const { planet } = Astro.props as { planet: Planet };
 ---
 
 <canvas id="planet-canvas" class="absolute inset-0 w-full h-full z-0"></canvas>
@@ -10,7 +9,6 @@ const { planet } = Astro.props as { planet: Planet };
   import type { Planet } from "../types/planet";
   import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
 
-  // --- CONFIGURACIÓN E INSTANCIAS ---
   const loader = new THREE.TextureLoader();
   const TEXTURES = {
     GAS: "/textures/jupiter.jpg",
@@ -19,9 +17,6 @@ const { planet } = Astro.props as { planet: Planet };
     LAVA: "/textures/lava.jpg",
     SUN: "/textures/sun.jpg",
   };
-
-  const el = document.getElementById("initial-data");
-  const initialPlanets: Planet[] = JSON.parse(el?.textContent ?? "[]");
 
   const canvas = document.getElementById("planet-canvas") as HTMLCanvasElement;
   const renderer = new THREE.WebGLRenderer({
@@ -43,13 +38,13 @@ const { planet } = Astro.props as { planet: Planet };
   camera.position.z = 10;
 
   const controls = new OrbitControls(camera, renderer.domElement);
-  controls.enableDamping = true; // Suavidad
+  controls.enableDamping = true;
   controls.dampingFactor = 0.05;
-  controls.enablePan = false; // No desplazar el planeta
-  controls.minDistance = 3.5; // Límite zoom cerca
-  controls.maxDistance = 20;
+  controls.enablePan = false;
+  controls.minDistance = 3.5;
+  controls.maxDistance = 25;
 
-  // --- SOLES 3D (SISTEMA ESTELAR) ---
+  // --- SOLES 3D ---
   const sunGeometry = new THREE.SphereGeometry(0.6, 32, 32);
   const sunTexture = loader.load(TEXTURES.SUN);
   const sunMaterial = new THREE.MeshStandardMaterial({
@@ -64,28 +59,23 @@ const { planet } = Astro.props as { planet: Planet };
     const count = snum ?? 1;
     activeSuns.forEach((sun) => scene.remove(sun));
     activeSuns = [];
-
     const baseX = 12;
     const baseY = 5;
     const baseZ = -18;
 
     for (let i = 0; i < count; i++) {
       const sunMesh = new THREE.Mesh(sunGeometry, sunMaterial);
-
       const xOffset = i * 2.5;
       const yOffset = i % 2 === 0 ? i * 1.2 : -i * 0.8;
       const zOffset = i * -3;
-
       sunMesh.position.set(baseX + xOffset, baseY + yOffset, baseZ + zOffset);
-
       sunMesh.rotation.set(Math.random(), Math.random(), 0);
-
       scene.add(sunMesh);
       activeSuns.push(sunMesh);
     }
   }
 
-  // --- ESTRELLAS DE FONDO ---
+  // --- ESTRELLAS ---
   const starGeo = new THREE.BufferGeometry();
   const starPositions = new Float32Array(3000 * 3);
   for (let i = 0; i < 9000; i++) starPositions[i] = (Math.random() - 0.5) * 400;
@@ -97,7 +87,7 @@ const { planet } = Astro.props as { planet: Planet };
     ),
   );
 
-  // --- ILUMINACIÓN ---
+  // --- ILUMINACIÓN (Siempre presente) ---
   scene.add(new THREE.AmbientLight(0xffffff, 0.3));
   const sunLight = new THREE.DirectionalLight(0xffffff, 2.8);
   sunLight.position.set(10, 5, 10);
@@ -105,20 +95,12 @@ const { planet } = Astro.props as { planet: Planet };
 
   // --- LÓGICA VISUAL ---
   function getTextureUrl(planet: Planet) {
-    const temp = planet.pl_eqt ?? 300;
-    const dens = planet.pl_dens ?? 5;
-    const rade = planet.pl_rade ?? 1;
-
+    const temp = planet?.pl_eqt ?? 300;
+    const dens = planet?.pl_dens ?? 5;
+    const rade = planet?.pl_rade ?? 1;
     if (temp > 1000) return TEXTURES.LAVA;
-
-    if (dens < 3.0 || rade > 3.5) {
-      return TEXTURES.GAS;
-    }
-
-    if (rade > 3.0 && temp < 150) {
-      return TEXTURES.ICY;
-    }
-
+    if (dens < 3.0 || rade > 3.5) return TEXTURES.GAS;
+    if (rade > 3.0 && temp < 150) return TEXTURES.ICY;
     return TEXTURES.ROCKY;
   }
 
@@ -134,36 +116,32 @@ const { planet } = Astro.props as { planet: Planet };
     return Math.max(0.6, Math.min(3.0, (rade ?? 1) / 3.5));
   }
 
-  // --- COMPONENTES DEL PLANETA ---
+  // --- CREACIÓN INICIAL DEL PLANETA (Invisible hasta que haya datos) ---
   const geometry = new THREE.SphereGeometry(1, 64, 64);
   const material = new THREE.MeshStandardMaterial({
-    map: loader.load(getTextureUrl(initialPlanets[0])),
-    color: tempToColor(initialPlanets[0].pl_eqt),
     roughness: 0.85,
     metalness: 0.1,
+    transparent: true,
+    opacity: 0, // Empezamos invisible
   });
   const planetMesh = new THREE.Mesh(geometry, material);
-  planetMesh.scale.setScalar(radiusToScale(initialPlanets[0].pl_rade));
   scene.add(planetMesh);
 
   const atmosMat = new THREE.MeshBasicMaterial({
-    color: tempToColor(initialPlanets[0].pl_eqt),
     transparent: true,
-    opacity: 0.12,
+    opacity: 0,
     side: THREE.BackSide,
   });
   const atmosphere = new THREE.Mesh(
     new THREE.SphereGeometry(1.08, 64, 64),
     atmosMat,
   );
-  atmosphere.scale.copy(planetMesh.scale);
   scene.add(atmosphere);
-
-  // Inicializar soles iniciales
-  updateSuns3D(initialPlanets[0].sy_snum);
 
   // --- FUNCIÓN DE ACTUALIZACIÓN GLOBAL ---
   function updateScene(planet: Planet) {
+    if (!planet) return;
+
     const textureUrl = getTextureUrl(planet);
     const color = tempToColor(planet.pl_eqt);
     const scale = radiusToScale(planet.pl_rade);
@@ -172,18 +150,19 @@ const { planet } = Astro.props as { planet: Planet };
       tex.colorSpace = THREE.SRGBColorSpace;
       material.map = tex;
       material.color.set(color);
+      material.opacity = 1; // Hacerlo visible
       material.needsUpdate = true;
 
       atmosMat.color.set(color);
+      atmosMat.opacity = 0.12;
+
       planetMesh.scale.setScalar(scale);
       atmosphere.scale.setScalar(scale * 1.05);
 
-      // Actualizar soles en el fondo
       updateSuns3D(planet.sy_snum);
     });
   }
 
-  // Exponer a window para comunicación con index.astro
   (window as any).updateScene = updateScene;
 
   window.addEventListener("resize", () => {
@@ -197,11 +176,9 @@ const { planet } = Astro.props as { planet: Planet };
     controls.update();
     planetMesh.rotation.y += 0.0018;
     atmosphere.rotation.y += 0.0012;
-
     activeSuns.forEach((sun) => {
       sun.rotation.y += 0.005;
     });
-
     renderer.render(scene, camera);
   }
   animate();

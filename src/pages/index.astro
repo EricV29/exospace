@@ -2,30 +2,16 @@
 import Layout from "../layouts/Layout.astro";
 import PlanetCard from "../components/PlanetCard.astro";
 import PlanetScene from "../components/PlanetScene.astro";
-
-const API_URL =
-  "https://exoplanetarchive.ipac.caltech.edu/TAP/sync?query=" +
-  "select top 5 " +
-  "pl_name,discoverymethod,pl_orbper,pl_dens,pl_eqt,sy_snum,sy_dist,disc_year,pl_rade,pl_masse " +
-  "from ps " +
-  "where pl_rade is not null " +
-  "and pl_masse is not null " +
-  "and pl_eqt is not null " +
-  "order by disc_year desc" +
-  "&format=json";
-
-const response = await fetch(API_URL);
-const initialPlanets = await response.json();
 ---
 
-<Layout>
+<Layout title="Exoplanet Archive - NASA Data">
   <main class="h-screen w-screen overflow-hidden relative bg-black">
-    <PlanetScene planet={initialPlanets[0]} />
+    <PlanetScene planet={null} />
 
     <div
       class="absolute inset-0 z-20 pointer-events-none flex flex-col justify-between p-12 md:p-16"
     >
-      <PlanetCard planet={initialPlanets[0]} />
+      <PlanetCard planet={null} />
 
       <div
         class="absolute right-12 md:right-16 z-30 flex gap-4 top-1/2 -translate-y-1/2 pointer-events-auto"
@@ -53,44 +39,62 @@ const initialPlanets = await response.json();
   </main>
 </Layout>
 
-<script
-  type="application/json"
-  id="initial-data"
-  set:html={JSON.stringify(initialPlanets)}
-/>
-
 <script>
   import type { Planet } from "../types/planet";
 
-  showLoading();
-  document.addEventListener("DOMContentLoaded", () => hideLoading());
-
-  const el = document.getElementById("initial-data");
-  const initialPlanets = JSON.parse(el?.textContent ?? "[]");
-
-  let planets = [...initialPlanets];
+  let planets: Planet[] = [];
   let currentIndex = 0;
   let offset = 5;
   let isFetching = false;
 
+  async function init() {
+    showLoading();
+    try {
+      const res = await fetch("/api/planets?offset=0");
+
+      if (!res.ok) {
+        const errorData = await res.json();
+        console.error("Detalle del error desde el proxy:", errorData);
+        throw new Error("Error en mi proxy");
+      }
+
+      planets = await res.json();
+      if (planets.length > 0) renderPlanet(planets[0]);
+    } catch (e) {
+      console.error("Fallo total:", e);
+    } finally {
+      hideLoading();
+    }
+  }
+
+  // --- LÓGICA DE RENDERIZADO ---
   function get(field: string) {
     return document.querySelector(`[data-field="${field}"]`);
   }
 
   function renderPlanet(planet: Planet) {
+    if (!planet) return;
+
     const distLY = planet.sy_dist ? (planet.sy_dist * 3.262).toFixed(1) : "???";
     const orbitDays = planet.pl_orbper?.toFixed(1) ?? "---";
     const isHot = (planet.pl_eqt ?? 0) > 500;
 
-    get("pl_name")!.textContent = planet.pl_name ?? "???";
-    get("disc_year")!.textContent = planet.disc_year?.toString() ?? "???";
-    get("pl_rade")!.textContent = planet.pl_rade?.toFixed(2) ?? "---";
-    get("pl_masse")!.textContent = planet.pl_masse?.toFixed(2) ?? "---";
-    get("pl_dens")!.textContent = planet.pl_dens?.toFixed(2) ?? "---";
-    get("pl_eqt")!.textContent = planet.pl_eqt?.toString() ?? "---";
-    get("pl_orbper")!.textContent = orbitDays;
-    get("discoverymethod")!.textContent = planet.discoverymethod ?? "???";
-    get("sy_dist")!.textContent = distLY;
+    const fields = {
+      pl_name: planet.pl_name ?? "???",
+      disc_year: planet.disc_year?.toString() ?? "???",
+      pl_rade: planet.pl_rade?.toFixed(2) ?? "---",
+      pl_masse: planet.pl_masse?.toFixed(2) ?? "---",
+      pl_dens: planet.pl_dens?.toFixed(2) ?? "---",
+      pl_eqt: planet.pl_eqt?.toString() ?? "---",
+      pl_orbper: orbitDays,
+      discoverymethod: planet.discoverymethod ?? "???",
+      sy_dist: distLY,
+    };
+
+    Object.entries(fields).forEach(([key, value]) => {
+      const el = get(key);
+      if (el) el.textContent = value;
+    });
 
     const eqtEl = get("pl_eqt")?.parentElement;
     if (eqtEl) {
@@ -102,6 +106,7 @@ const initialPlanets = await response.json();
     }
   }
 
+  // --- GESTIÓN DE CARGA ---
   function showLoading() {
     const screen = document.getElementById("loading-screen");
     if (screen) {
@@ -118,47 +123,68 @@ const initialPlanets = await response.json();
     }
   }
 
+  // --- CARGA INFINITA (Pagination) ---
   async function fetchMore() {
     if (isFetching) return;
     isFetching = true;
-    // showLoading();
+
+    const currentOffset = planets.length;
+
     try {
-      const res = await fetch(`/api/planets?offset=${offset}`);
-      const newPlanets = await res.json();
-      if (newPlanets.length > 0) {
-        planets = [...planets, ...newPlanets];
-        offset += 5;
+      const res = await fetch(`/api/planets?offset=${currentOffset}`);
+      if (!res.ok) throw new Error("Proxy error");
+
+      const allPlanetsFetched = await res.json();
+
+      const existingNames = new Set(planets.map((p) => p.pl_name));
+      const newOnes = allPlanetsFetched.filter(
+        (p: Planet) => !existingNames.has(p.pl_name),
+      );
+
+      if (newOnes.length > 0) {
+        planets = [...planets, ...newOnes];
+        console.log(
+          "Añadidos:",
+          newOnes.length,
+          "Total en memoria:",
+          planets.length,
+        );
       }
     } catch (e) {
-      console.error("Error fetching planets:", e);
+      console.error(e);
     } finally {
       isFetching = false;
-      // hideLoading();
     }
   }
 
+  // --- EVENT LISTENERS ---
   document
     .getElementById("next-planet")
     ?.addEventListener("click", async () => {
-      const isLast = currentIndex === planets.length - 1;
+      if (planets.length === 0) return;
 
-      // Pre-fetch anticipado
       if (currentIndex >= planets.length - 3) fetchMore();
 
-      // Si es el último, espera solo si aún no llegaron datos
-      if (isLast) {
-        while (planets.length === currentIndex + 1) {
-          await new Promise((r) => setTimeout(r, 100)); // espera 100ms y reintenta
+      if (currentIndex < planets.length - 1) {
+        currentIndex++;
+        renderPlanet(planets[currentIndex]);
+      } else {
+        showLoading();
+        await fetchMore();
+        if (currentIndex < planets.length - 1) {
+          currentIndex++;
+          renderPlanet(planets[currentIndex]);
         }
+        hideLoading();
       }
-
-      currentIndex++;
-      renderPlanet(planets[currentIndex]);
     });
 
   document.getElementById("prev-planet")?.addEventListener("click", () => {
-    if (currentIndex === 0) return;
-    currentIndex--;
-    renderPlanet(planets[currentIndex]);
+    if (currentIndex > 0) {
+      currentIndex--;
+      renderPlanet(planets[currentIndex]);
+    }
   });
+
+  init();
 </script>

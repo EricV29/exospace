@@ -1,0 +1,185 @@
+---
+import type { Planet } from "../types/planet";
+---
+
+<canvas id="planet-canvas" class="absolute inset-0 w-full h-full z-0"></canvas>
+
+<script>
+  import * as THREE from "three";
+  import type { Planet } from "../types/planet";
+  import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
+
+  const loader = new THREE.TextureLoader();
+  const TEXTURES = {
+    GAS: "/textures/jupiter.jpg",
+    ROCKY: "/textures/mars.jpg",
+    ICY: "/textures/neptune.jpg",
+    LAVA: "/textures/lava.jpg",
+    SUN: "/textures/sun.jpg",
+  };
+
+  const canvas = document.getElementById("planet-canvas") as HTMLCanvasElement;
+  const renderer = new THREE.WebGLRenderer({
+    canvas,
+    antialias: true,
+    alpha: true,
+    powerPreference: "high-performance",
+  });
+  renderer.setSize(window.innerWidth, window.innerHeight);
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+
+  const scene = new THREE.Scene();
+  const camera = new THREE.PerspectiveCamera(
+    45,
+    window.innerWidth / window.innerHeight,
+    0.1,
+    1000,
+  );
+  camera.position.z = 10;
+
+  const controls = new OrbitControls(camera, renderer.domElement);
+  controls.enableDamping = true;
+  controls.dampingFactor = 0.05;
+  controls.enablePan = false;
+  controls.minDistance = 3.5;
+  controls.maxDistance = 25;
+
+  // --- SOLES 3D ---
+  const sunGeometry = new THREE.SphereGeometry(0.6, 32, 32);
+  const sunTexture = loader.load(TEXTURES.SUN);
+  const sunMaterial = new THREE.MeshStandardMaterial({
+    map: sunTexture,
+    emissiveMap: sunTexture,
+    emissive: 0xffffff,
+    emissiveIntensity: 6,
+  });
+  let activeSuns: THREE.Mesh[] = [];
+
+  function updateSuns3D(snum: number | null) {
+    const count = snum ?? 1;
+    activeSuns.forEach((sun) => scene.remove(sun));
+    activeSuns = [];
+    const baseX = 12;
+    const baseY = 5;
+    const baseZ = -18;
+
+    for (let i = 0; i < count; i++) {
+      const sunMesh = new THREE.Mesh(sunGeometry, sunMaterial);
+      const xOffset = i * 2.5;
+      const yOffset = i % 2 === 0 ? i * 1.2 : -i * 0.8;
+      const zOffset = i * -3;
+      sunMesh.position.set(baseX + xOffset, baseY + yOffset, baseZ + zOffset);
+      sunMesh.rotation.set(Math.random(), Math.random(), 0);
+      scene.add(sunMesh);
+      activeSuns.push(sunMesh);
+    }
+  }
+
+  // --- ESTRELLAS ---
+  const starGeo = new THREE.BufferGeometry();
+  const starPositions = new Float32Array(3000 * 3);
+  for (let i = 0; i < 9000; i++) starPositions[i] = (Math.random() - 0.5) * 400;
+  starGeo.setAttribute("position", new THREE.BufferAttribute(starPositions, 3));
+  scene.add(
+    new THREE.Points(
+      starGeo,
+      new THREE.PointsMaterial({ color: 0xffffff, size: 0.12 }),
+    ),
+  );
+
+  // --- ILUMINACIÓN (Siempre presente) ---
+  scene.add(new THREE.AmbientLight(0xffffff, 0.3));
+  const sunLight = new THREE.DirectionalLight(0xffffff, 2.8);
+  sunLight.position.set(10, 5, 10);
+  scene.add(sunLight);
+
+  // --- LÓGICA VISUAL ---
+  function getTextureUrl(planet: Planet) {
+    const temp = planet?.pl_eqt ?? 300;
+    const dens = planet?.pl_dens ?? 5;
+    const rade = planet?.pl_rade ?? 1;
+    if (temp > 1000) return TEXTURES.LAVA;
+    if (dens < 3.0 || rade > 3.5) return TEXTURES.GAS;
+    if (rade > 3.0 && temp < 150) return TEXTURES.ICY;
+    return TEXTURES.ROCKY;
+  }
+
+  function tempToColor(eqt: number | null): THREE.Color {
+    if (!eqt) return new THREE.Color(0xffffff);
+    if (eqt > 1200) return new THREE.Color(0xff4400);
+    if (eqt > 600) return new THREE.Color(0xffaa66);
+    if (eqt < 200) return new THREE.Color(0x99ccff);
+    return new THREE.Color(0xffffff);
+  }
+
+  function radiusToScale(rade: number | null): number {
+    return Math.max(0.6, Math.min(3.0, (rade ?? 1) / 3.5));
+  }
+
+  // --- CREACIÓN INICIAL DEL PLANETA (Invisible hasta que haya datos) ---
+  const geometry = new THREE.SphereGeometry(1, 64, 64);
+  const material = new THREE.MeshStandardMaterial({
+    roughness: 0.85,
+    metalness: 0.1,
+    transparent: true,
+    opacity: 0, // Empezamos invisible
+  });
+  const planetMesh = new THREE.Mesh(geometry, material);
+  scene.add(planetMesh);
+
+  const atmosMat = new THREE.MeshBasicMaterial({
+    transparent: true,
+    opacity: 0,
+    side: THREE.BackSide,
+  });
+  const atmosphere = new THREE.Mesh(
+    new THREE.SphereGeometry(1.08, 64, 64),
+    atmosMat,
+  );
+  scene.add(atmosphere);
+
+  // --- FUNCIÓN DE ACTUALIZACIÓN GLOBAL ---
+  function updateScene(planet: Planet) {
+    if (!planet) return;
+
+    const textureUrl = getTextureUrl(planet);
+    const color = tempToColor(planet.pl_eqt);
+    const scale = radiusToScale(planet.pl_rade);
+
+    loader.load(textureUrl, (tex) => {
+      tex.colorSpace = THREE.SRGBColorSpace;
+      material.map = tex;
+      material.color.set(color);
+      material.opacity = 1; // Hacerlo visible
+      material.needsUpdate = true;
+
+      atmosMat.color.set(color);
+      atmosMat.opacity = 0.12;
+
+      planetMesh.scale.setScalar(scale);
+      atmosphere.scale.setScalar(scale * 1.05);
+
+      updateSuns3D(planet.sy_snum);
+    });
+  }
+
+  (window as any).updateScene = updateScene;
+
+  window.addEventListener("resize", () => {
+    camera.aspect = window.innerWidth / window.innerHeight;
+    camera.updateProjectionMatrix();
+    renderer.setSize(window.innerWidth, window.innerHeight);
+  });
+
+  function animate() {
+    requestAnimationFrame(animate);
+    controls.update();
+    planetMesh.rotation.y += 0.0018;
+    atmosphere.rotation.y += 0.0012;
+    activeSuns.forEach((sun) => {
+      sun.rotation.y += 0.005;
+    });
+    renderer.render(scene, camera);
+  }
+  animate();
+</script>

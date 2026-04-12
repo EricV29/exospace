@@ -1,0 +1,113 @@
+---
+const { planet } = Astro.props;
+
+// 1. Evitamos cálculos si planet es null
+const distLY = planet?.sy_dist ? (planet.sy_dist * 3.262).toFixed(1) : "---";
+const orbitDays = planet?.pl_orbper?.toFixed(1) || "---";
+const isHot = (planet?.pl_eqt ?? 0) > 500;
+---
+
+<section
+  data-index="0"
+  class="w-screen h-screen relative flex items-center justify-center snap-start"
+>
+  <div class="absolute left-12 top-12 md:left-16 md:top-16 text-white z-20">
+    <p class="text-[10px] font-mono opacity-40 uppercase tracking-[0.4em] mb-1">
+      Nombre_Id
+    </p>
+    <h1
+      class="text-5xl md:text-7xl font-light italic tracking-tighter uppercase leading-none"
+    >
+      <span data-field="pl_name">{planet?.pl_name ?? "Cargando..."}</span>
+    </h1>
+    <h3 class="text-lg font-mono opacity-60 mt-2">
+      Año_descubrimiento: <span data-field="disc_year" class="text-white">
+        {planet?.disc_year ?? "???"}
+      </span>
+    </h3>
+  </div>
+
+  <div
+    class="absolute left-12 md:left-16 top-1/2 -translate-y-1/2 z-20 space-y-10 pointer-events-none"
+  >
+    <div class="border-l-2 border-white/40 pl-4">
+      <p class="text-[10px] font-mono opacity-40 uppercase tracking-widest">
+        Radio_Planetario
+      </p>
+      <p class="text-3xl text-white font-light">
+        <span data-field="pl_rade">{planet?.pl_rade?.toFixed(2) ?? "---"}</span>
+        <span class="text-xs opacity-50">R⊕</span>
+      </p>
+    </div>
+    <div class="border-l-2 border-white/40 pl-4">
+      <p class="text-[10px] font-mono opacity-40 uppercase tracking-widest">
+        Masa_Estimada
+      </p>
+      <p class="text-3xl text-white font-light">
+        <span data-field="pl_masse"
+          >{planet?.pl_masse?.toFixed(2) ?? "---"}</span
+        >
+        <span class="text-xs opacity-50">M⊕</span>
+      </p>
+    </div>
+    <div class="border-l-2 border-white/40 pl-4">
+      <p class="text-[10px] font-mono opacity-40 uppercase tracking-widest">
+        Densidad_G/CM³
+      </p>
+      <p class="text-3xl text-white font-light">
+        <span data-field="pl_dens">{planet?.pl_dens?.toFixed(2) ?? "---"}</span>
+      </p>
+    </div>
+    <div class="border-l-2 border-white/40 pl-4">
+      <p class="text-[10px] font-mono opacity-40 uppercase tracking-widest">
+        Temp_Equilibrio
+      </p>
+      <p
+        class={`text-3xl font-light ${isHot ? "text-amber-400" : "text-white"}`}
+      >
+        <span data-field="pl_eqt">{planet?.pl_eqt ?? "---"}</span>
+        <span class="text-xs opacity-50">K</span>
+      </p>
+    </div>
+  </div>
+
+  <div
+    class="absolute right-12 top-12 md:right-16 md:top-16 text-right text-white z-20"
+  >
+    <p class="text-[10px] font-mono opacity-40 uppercase tracking-[0.4em] mb-1">
+      Duración_año
+    </p>
+    <div class="flex items-baseline justify-end gap-2">
+      <span data-field="pl_orbper" class="text-4xl font-light">{orbitDays}</span
+      >
+      <span class="text-xs font-mono opacity-60 uppercase">Days</span>
+    </div>
+  </div>
+
+  <div
+    class="absolute left-12 bottom-12 md:left-16 md:bottom-16 text-white z-20"
+  >
+    <p class="text-[10px] font-mono opacity-40 uppercase tracking-[0.4em] mb-1">
+      Metodo_detección
+    </p>
+    <p
+      class="text-xl font-light tracking-wide uppercase border-l-2 border-white pl-4"
+    >
+      <span data-field="discoverymethod"
+        >{planet?.discoverymethod ?? "???"}</span
+      >
+    </p>
+  </div>
+
+  <div
+    class="absolute right-12 bottom-12 md:right-16 md:bottom-16 text-right text-white z-20"
+  >
+    <p class="text-[10px] font-mono opacity-40 uppercase tracking-[0.4em] mb-1">
+      Distancia_sol
+    </p>
+    <div class="flex items-baseline justify-end gap-2">
+      <span data-field="sy_dist" class="text-4xl font-light">{distLY}</span>
+      <span class="text-xs font-mono opacity-60 uppercase">Años_luz</span>
+    </div>
+  </div>
+</section>

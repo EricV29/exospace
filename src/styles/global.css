@@ -9,26 +9,14 @@
 
 html,
 body {
-  margin: 0;
   width: 100%;
   height: 100%;
-}
-
-/* Estilos de estructura */
-html {
+  background-color: #000000;
+  overflow: hidden;
+  color: white;
   scroll-behavior: smooth;
+  cursor: none;
 }
-
-body {
-  font-family:
-    system-ui,
-    -apple-system,
-    sans-serif;
-  line-height: 1.5;
-  background-color: #ffffff;
-  color: #1a1a1a;
-}
-
 /* Tipografía básica */
 h1,
 h2,
@@ -64,4 +52,21 @@ img {
 /* Listas sin puntitos (opcional, muy útil para menús) */
 ul {
   list-style: none;
+}
+
+button {
+  cursor: none;
+}
+
+.custom-cursor {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 45px;
+  height: 45px;
+  pointer-events: none;
+  z-index: 9999;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  filter: drop-shadow(0 0 5px rgba(255, 255, 255, 1));
 }

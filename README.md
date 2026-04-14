@@ -1,46 +1,64 @@
-# Astro Starter Kit: Basics
+<p align="center">
+  <img width="300px" src="./public/exospaceweb.png" alt="LogoFidePOS"/>
+</p>
 
-```sh
-pnpm create astro@latest -- --template basics
+<h3 align="center">
+ExoSpace es una sitio web de visualización de exoplanetas que consume datos en tiempo real de la NASA Exoplanet Archive.
+</h3>
+
+---
+
+<h2 align="center">Stack Tecnológico 🧑‍💻</h2>
+
+<p align="center">
+  <a href="https://skillicons.dev">
+    <img src="https://skillicons.dev/icons?i=astro,typescript,tailwind,threejs" />
+  </a>
+</p>
+
+<br/>
+
+> [!WARNING]
+> ⚠️ Lo exoplanetas visualizados en 3D aun no estan siendo representados a sus caracteristicas descubiertas.
+
+<h2 align="center">Project Setup 🚀</h2>
+
+### 📄 Requisitos previos
+
+- pnpm
+
+### 📁 Clonar Repositorio
+
+To use this project locally, run the following commands in your terminal:
+
+```bash
+git clone https://github.com/EricV29/exospace.git
+cd exospace
+pnpm install
 ```
 
-> 🧑‍🚀 **Seasoned astronaut?** Delete this file. Have fun!
+## 🧩 Available Scripts
 
-## 🚀 Project Structure
+### 🔧 Development
 
-Inside of your Astro project, you'll see the following folders and files:
+Ejecutar modo desarrollo:
 
-```text
-/
-├── public/
-│   └── favicon.svg
-├── src
-│   ├── assets
-│   │   └── astro.svg
-│   ├── components
-│   │   └── Welcome.astro
-│   ├── layouts
-│   │   └── Layout.astro
-│   └── pages
-│       └── index.astro
-└── package.json
+```bash
+pnpm dev
 ```
 
-To learn more about the folder structure of an Astro project, refer to [our guide on project structure](https://docs.astro.build/en/basics/project-structure/).
-
-## 🧞 Commands
-
-All commands are run from the root of the project, from a terminal:
-
-| Command                   | Action                                           |
-| :------------------------ | :----------------------------------------------- |
-| `pnpm install`             | Installs dependencies                            |
-| `pnpm dev`             | Starts local dev server at `localhost:4321`      |
-| `pnpm build`           | Build your production site to `./dist/`          |
-| `pnpm preview`         | Preview your build locally, before deploying     |
-| `pnpm astro ...`       | Run CLI commands like `astro add`, `astro check` |
-| `pnpm astro -- --help` | Get help using the Astro CLI                     |
-
-## 👀 Want to learn more?
-
-Feel free to check [our documentation](https://docs.astro.build) or jump into our [Discord server](https://astro.build/chat).
+```
+📁 project/
+┣ 📂 public/
+┃
+┣ 📂 src/
+┃ ┣ 📂 assets/
+┃ ┣ 📂 components/
+┃ ┣ 📂 layouts/
+┃ ┣ 📂 pages/
+┃ ┣ 📂 styles/
+┃ ┣ 📂 types/
+┃
+┣ 📜 package.json
+┣ ⚙️ tsconfig.ts
+```
